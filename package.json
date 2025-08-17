@@ -1,0 +1,37 @@
+{
+  "name": "financing-ph",
+  "version": "1.0.0",
+  "description": "Loan marketplace platform for the Philippines with admin dashboard",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:www\" \"npm run dev:admin\"",
+    "dev:www": "cd www && npm run dev",
+    "dev:admin": "cd admin && npm run dev -- --port 3001",
+    "build": "npm run build:www && npm run build:admin",
+    "build:www": "cd www && npm run build",
+    "build:admin": "cd admin && npm run build",
+    "start": "concurrently \"npm run start:www\" \"npm run start:admin\"",
+    "start:www": "cd www && npm start",
+    "start:admin": "cd admin && npm start -- --port 3001",
+    "install:all": "npm install && cd www && npm install && cd ../admin && npm install",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up",
+    "docker:prod": "docker-compose up",
+    "docker:build": "docker-compose build",
+    "db:migrate": "psql $DATABASE_URL -f database/schema.sql"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "loans",
+    "philippines",
+    "financing",
+    "nextjs",
+    "supabase",
+    "clerk"
+  ],
+  "author": "Financing.ph Team",
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
+}

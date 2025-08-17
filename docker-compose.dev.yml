@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=financing
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d/
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  www:
+    build:
+      context: ./www
+      dockerfile: ../Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Z3Jvd24td2Fob28tMzYuY2xlcmsuYWNjb3VudHMuZGV2JA
+      - CLERK_SECRET_KEY=sk_test_8id7PqmbWeazvCsoewqfn9WKasvfWDmEKBUl1JfX5D
+      - NEXT_PUBLIC_SUPABASE_URL=https://vtsayrgwwfsszykgudlc.supabase.co
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+      - SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/financing
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./www:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev -- --turbo
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: ../Dockerfile.dev
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Z3Jvd24td2Fob28tMzYuY2xlcmsuYWNjb3VudHMuZGV2JA
+      - CLERK_SECRET_KEY=sk_test_8id7PqmbWeazvCsoewqfn9WKasvfWDmEKBUl1JfX5D
+      - NEXT_PUBLIC_SUPABASE_URL=https://vtsayrgwwfsszykgudlc.supabase.co
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+      - SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/financing
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./admin:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev -- --turbo --port 3001
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
